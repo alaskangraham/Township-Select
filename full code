@@ -1,0 +1,161 @@
+# ---------------------------------------------------------------------------
+# Township Selector
+# Created on: 2014-02-24 15:28:23.00000
+# Create by Jason Graham
+# Description:Add-in tool to easily select a township then zoom to the selection
+# using a series od combobox to gather input from the user
+# ---------------------------------------------------------------------------
+
+import arcpy
+import pythonaddins
+from arcpy import env
+
+ 
+
+# This tool uses a specific "Townships" layer located here.
+env.workspace = r"X:\JasonGraham\Landstatus\Data\ls2014.gdb\BaseData"
+
+mxd = arcpy.mapping.MapDocument("CURRENT")
+
+
+
+class ComboBoxClass4(object): #Collect Meridian from a List
+    """Implementation for MTR_addin.combobox (ComboBox)"""
+    def __init__(self):
+        self.value = "M"  
+        self.items = ("C", "F", "K", "S", "U") 
+        self.editable = True
+        self.enabled = True
+        self.dropdownWidth = 'WWW'
+        self.width = 'WWW'
+    def onSelChange(self, selection):
+        self.sel = selection
+    def onEditChange(self, text):
+        pass
+    def onFocus(self, focused):
+        pass
+    def onEnter(self):
+        pass
+    def refresh(self):
+        pass
+
+
+Twp = []
+for row in arcpy.SearchCursor("X:\JasonGraham\Landstatus\Data\ls2014.gdb\BaseData\Townships"):
+    Twp.append(row.TWP_NUMC)
+
+class ComboBoxClass5(object): #Collect Township from list of unique values gathered from the layer
+    """Implementation for MTR_addin.combobox_1 (ComboBox)"""
+    def __init__(self):
+        self.value = "000"
+        self.items = sorted(Twp)
+        self.editable = True
+        self.enabled = True
+        self.dropdownWidth = 'WWWW'
+        self.width = 'WWWW'
+    def onSelChange(self, selection):
+        self.sel = selection   
+        #global valName
+        #val = (self.items, selection)[1]
+        #valName = str(val)
+    def onEditChange(self, text):
+        pass
+    def onFocus(self, focused):#show only unique values
+        if focused:
+            values = sorted(Twp)
+            uniqueValues = set(values)
+            self.items = []
+            for uniqueValue in uniqueValues:
+                self.items.append(uniqueValue)
+    def onEnter(self):
+        pass
+    def refresh(self):
+        pass
+
+
+class ComboBoxClass6(object): #Collect North/South from a list
+    """Implementation for MTR_addin.combobox_2 (ComboBox)"""
+    def __init__(self):
+        self.value = "NS"
+        self.items = ("N", "S")
+        self.editable = True
+        self.enabled = True
+        self.dropdownWidth = 'WWW'
+        self.width = 'WWW'
+    def onSelChange(self, selection):
+        self.sel = selection
+    def onEditChange(self, text):
+        pass
+    def onFocus(self, focused):
+        pass
+    def onEnter(self):
+        pass
+    def refresh(self):
+        pass
+ 
+
+Rng = []
+for row in arcpy.SearchCursor("X:\JasonGraham\Landstatus\Data\ls2014.gdb\BaseData\Townships"):
+    Rng.append(row.RNG_NUMC)
+    
+class ComboBoxClass7(object): #Collect Range from list of unique values gathered from the layer
+    """Implementation for MTR_addin.combobox_3 (ComboBox)"""
+    def __init__(self):
+        self.value = "000"
+        self.items = sorted(Rng)
+        self.editable = True
+        self.enabled = True
+        self.dropdownWidth = 'WWWW'
+        self.width = 'WWWW'
+    def onSelChange(self, selection):
+        self.sel = selection   
+        #global valName
+        #val = (self.items, selection)[1]
+        #valName = str(val)
+    def onEditChange(self, text):
+        pass
+    def onFocus(self, focused):#show only unique values
+        if focused:
+            values = sorted(Rng)
+            uniqueValues = set(values)
+            self.items = []
+            for uniqueValue in uniqueValues:
+                self.items.append(uniqueValue)
+    def onEnter(self):
+        pass
+    def refresh(self):
+        pass
+    
+class ComboBoxClass8(object):# Collect East/west from a list
+    """Implementation for MTR_addin.combobox_4 (ComboBox)"""
+    def __init__(self):
+        self.value = "EW"
+        self.items = ("E", "W")
+        self.editable = True
+        self.enabled = True
+        self.dropdownWidth = 'WWW'
+        self.width = 'WWW'
+    def onSelChange(self, selection):
+        self.sel = selection       
+    def onEditChange(self, text):
+        pass
+    def onFocus(self, focused):
+        pass               
+    def onEnter(self):
+        pass
+    def refresh(self):
+        pass 
+
+
+class ButtonClass3(object):# Activate Select and Zoom
+    """Implementation for MTR_addin.button (Button)"""
+    def __init__(self):
+        self.enabled = True
+        self.checked = False
+    def onClick(self):
+        #concatenate inputs
+        MTRsel = combobox.sel + combobox_1.sel + combobox_2.sel + combobox_3.sel + combobox_4.sel
+        # Select user input value
+        arcpy.SelectLayerByAttribute_management("Townships","NEW_SELECTION",'"MTR" =' + "'%s'" %MTRsel) 
+        # Zoom to selected township
+        arcpy.mapping.ListDataFrames(mxd)[0].zoomToSelectedFeatures()   
